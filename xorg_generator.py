@@ -26,6 +26,10 @@ class Section(object):
         new_identifier.set_content(iname)
         return new_identifier
 
+    def delete_line(self, text):
+        substr = '.*{}.*\n'.format(text)
+        self.content = re.sub(substr, '', self.content)
+
     def append_line(self, item):
         tmp_content = ''
         list_of_lines = self.content.split('\n')
@@ -79,6 +83,15 @@ class AllSections(object):
         after_sections.delete_section('Monitor')
         after_sections.delete_section('Device')
         after_sections.delete_section('Screen')
+        p1 = subprocess.Popen(["nvidia-xconfig", "--query-gpu-info"],
+                              stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(["grep", "PCI BusID"],
+                              stdin=p1.stdout, stdout=subprocess.PIPE)
+        p3 = subprocess.Popen(["sed", "-r", "s/\\s*PCI BusID : PCI:(.*)/\\1/"],
+                              stdin=p2.stdout, stdout=subprocess.PIPE)
+        p1.stdout.close()
+        p2.stdout.close()
+        bus_ids = p3.communicate()[0].decode('utf-8').rstrip().split('\n')
         for i in range(times):
             # Monitor
             original_monitor = self.search_section('Monitor')
@@ -87,6 +100,8 @@ class AllSections(object):
             # Device
             original_device = self.search_section('Device')
             new_device = original_device.create_new_identifier(i)
+            new_device.delete_line('BoardName')
+            new_device.append_line('    BusID          "{}"'.format(bus_ids[i]))
             new_device.append_line('    Option         "AllowExternalGpus" "True"')
             new_device.append_line('    Screen         ' + str(i))
             after_sections.add_section(new_device)
@@ -136,21 +151,10 @@ class SourceXorgConf(object):
         return self.content
 
     def __exec_nvidia_xconfig(self, resolution):
-        p1 = subprocess.Popen(["nvidia-xconfig", "--query-gpu-info"],
-                              stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(["grep", "PCI BusID"],
-                              stdin=p1.stdout, stdout=subprocess.PIPE)
-        p3 = subprocess.Popen(["sed", "-r", "s/\\s*PCI BusID : PCI:(.*)/\\1/"],
-                              stdin=p2.stdout, stdout=subprocess.PIPE)
-        p1.stdout.close()
-        p2.stdout.close()
-        bus_id = p3.communicate()[0].decode('utf-8').rstrip()
         ret = subprocess.run(["nvidia-xconfig",
                               "-o", self.path,
-                              "--busid", bus_id,
                               "--virtual", resolution,
                               "--depth=24",
-                              "--use-display-device=None",
                               "--allow-empty-initial-configuration",
                               "--enable-all-gpus"],
                              stdout=subprocess.DEVNULL,
