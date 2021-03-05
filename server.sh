@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 docker run -it --rm --gpus all \
   --device=/dev/tty0:/dev/tty0 \
   --device=/dev/tty1:/dev/tty1 \

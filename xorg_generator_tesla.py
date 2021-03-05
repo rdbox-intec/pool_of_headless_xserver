@@ -101,8 +101,8 @@ class AllSections(object):
             original_device = self.search_section('Device')
             new_device = original_device.create_new_identifier(i)
             new_device.delete_line('BoardName')
-            new_device.append_line('    BusID          "{}"'.format(bus_ids[i]))
-            new_device.append_line('    Option         "AllowExternalGpus" "True"')
+            new_device.append_line('    BusID          "{}"'.format(bus_ids[i]))    # noqa
+            new_device.append_line('    Option         "AllowExternalGpus" "True"') # noqa
             new_device.append_line('    Screen         ' + str(i))
             after_sections.add_section(new_device)
             # Screen
@@ -116,8 +116,7 @@ class AllSections(object):
             # ServerLayout
             if i != 0:
                 serverlayout = after_sections.search_section('ServerLayout')
-                tmp_setting = '    Screen      {}  "Screen{}" leftOf "Screen0"'\
-                              .format(str(i), str(i))
+                tmp_setting = '    Screen      {}  "Screen{}" leftOf "Screen0"'.format(str(i), str(i))  # noqa
                 serverlayout.append_line(tmp_setting)
         return after_sections
 
