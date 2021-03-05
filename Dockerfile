@@ -45,7 +45,9 @@ RUN apt-get install -y \
 # Install the userspace components and copy the kernel module sources.
 COPY generate_url.sh /generate_url.sh
 ARG DRIVER_VERSION
+ENV DRIVER_VERSION $DRIVER_VERSION
 ARG PRODUCT_BRAND
+ENV PRODUCT_BRAND $PRODUCT_BRAND
 RUN cd /tmp && \
     curl -fSsl -O $(sh /generate_url.sh $DRIVER_VERSION $PRODUCT_BRAND) && \
     sh NVIDIA-Linux-x86_64-$DRIVER_VERSION.run -x && \
@@ -80,6 +82,6 @@ RUN apt-get install -y --no-install-recommends \
 
 # (3) Run Xorg server
 COPY entrypoint.sh /entrypoint.sh
-COPY xorg_generator.py /xorg_generator.py
+COPY xorg_generator_tesla.py /xorg_generator_tesla.py
 ENTRYPOINT ["/entrypoint.sh"]
 CMD tail -f /dev/null

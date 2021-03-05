@@ -6,8 +6,15 @@ set -x
 trap 'kill $(jobs -p)' EXIT
 
 # 0. generate xorg.conf
-NUMBER_OF_GPU=$(nvidia-xconfig --query-gpu-info | grep 'PCI BusID' | sed -r 's/\s*PCI BusID : PCI:(.*)/\1/' | wc -l)
-/xorg_generator.py "${NUMBER_OF_GPU}" "${RESOLUTION}" > /etc/X11/xorg.conf
+if [ "${PRODUCT_BRAND}" = "Tesla" ]; then
+  NUMBER_OF_GPU=$(nvidia-xconfig --query-gpu-info | grep 'PCI BusID' | sed -r 's/\s*PCI BusID : PCI:(.*)/\1/' | wc -l)
+  /xorg_generator_tesla.py "${NUMBER_OF_GPU}" "${RESOLUTION}" > /etc/X11/xorg.conf
+elif [ "${PRODUCT_BRAND}" = "GeForce" ]; then
+  /xorg_generator_geforce.py "${NUMBER_OF_GPU}" "${RESOLUTION}" > /etc/X11/xorg.conf
+else
+  exit 1
+fi
+
 
 # 0. confirm xorg.conf
 cat /etc/X11/xorg.conf
