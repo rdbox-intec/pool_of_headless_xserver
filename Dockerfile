@@ -83,5 +83,6 @@ RUN apt-get install -y --no-install-recommends \
 # (3) Run Xorg server
 COPY entrypoint.sh /entrypoint.sh
 COPY xorg_generator_tesla.py /xorg_generator_tesla.py
+COPY xorg_generator_geforce.py /xorg_generator_geforce.py
 ENTRYPOINT ["/entrypoint.sh"]
 CMD tail -f /dev/null
